@@ -3,12 +3,20 @@ import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: "red" }}>
+    <Tabs
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: "#FFF8F2",
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => <Entypo name="home" size={24} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Entypo name="home" size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen name="login" options={{ title: "Login" }} />

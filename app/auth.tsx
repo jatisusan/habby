@@ -1,3 +1,4 @@
+import { useAuth } from "@/lib/auth-context";
 import { useState } from "react";
 import {
   Image,
@@ -11,8 +12,37 @@ import { Button, Text, TextInput } from "react-native-paper";
 const AuthScreen = () => {
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
 
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string | null>("");
+
+  const { signUp, login } = useAuth();
+
   const handleSwitchMode = () => {
     setIsSignUp((prev) => !prev);
+  };
+
+  const handleSubmit = async () => {
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    setError(null);
+
+    if (isSignUp) {
+      const error = await signUp(email, password);
+      if (error) {
+        setError(error);
+        return;
+      }
+    } else {
+      const error = await login(email, password);
+      if (error) {
+        setError(error);
+        return;
+      }
+    }
   };
 
   return (
@@ -38,6 +68,7 @@ const AuthScreen = () => {
           autoCapitalize="none"
           keyboardType="email-address"
           mode="outlined"
+          onChangeText={setEmail}
           style={styles.input}
         />
         <TextInput
@@ -45,10 +76,13 @@ const AuthScreen = () => {
           autoCapitalize="none"
           mode="outlined"
           secureTextEntry
+          onChangeText={setPassword}
           style={styles.input}
         />
 
-        <Button mode="contained" style={styles.button}>
+        {error && <Text style={{ color: "red" }}>{error}</Text>}
+
+        <Button mode="contained" style={styles.button} onPress={handleSubmit}>
           {isSignUp ? "Sign Up" : "Login"}
         </Button>
 

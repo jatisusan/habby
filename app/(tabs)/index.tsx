@@ -1,7 +1,9 @@
-import { Link } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { useAuth } from "@/lib/auth-context";
+import { Text, View } from "react-native";
+import { Button } from "react-native-paper";
 
 export default function Index() {
+  const { logout } = useAuth();
   return (
     <View
       style={{
@@ -11,18 +13,8 @@ export default function Index() {
       }}
     >
       <Text>Edit app/index.tsx to edit this screen.</Text>
-      <Link href="/login" style={styles.button}>
-        Go to Login screen
-      </Link>
+      <Button onPress={logout}>Logout</Button>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    marginTop: 10,
-    backgroundColor: "red",
-    padding: 10,
-    color: "white",
-  },
-});

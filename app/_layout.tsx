@@ -1,3 +1,5 @@
+import Loader from "@/components/Loader";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Stack } from "expo-router";
 import {
   MD3LightTheme as DefaultTheme,
@@ -12,20 +14,32 @@ const paperTheme = {
   },
 };
 
-export default function RootLayout() {
-  const isAuth = false;
+function LayoutContent() {
+  const { user, isUserLoading } = useAuth();
+
+  if (isUserLoading) {
+    return <Loader />;
+  }
 
   return (
-    <PaperProvider theme={paperTheme}>
-      <Stack>
-        <Stack.Protected guard={!!isAuth}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack.Protected>
+    <Stack>
+      <Stack.Protected guard={!!user}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack.Protected>
 
-        <Stack.Protected guard={!isAuth}>
-          <Stack.Screen name="auth" options={{ headerShown: false }} />
-        </Stack.Protected>
-      </Stack>
-    </PaperProvider>
+      <Stack.Protected guard={!user}>
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
+      </Stack.Protected>
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <PaperProvider theme={paperTheme}>
+        <LayoutContent />
+      </PaperProvider>
+    </AuthProvider>
   );
 }
