@@ -1,12 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const login = () => {
+const streaks = () => {
   return (
     <View>
-      <Text>login screen</Text>
+      <Text>streaks</Text>
     </View>
   )
 }
 
-export default login
+export default streaks
