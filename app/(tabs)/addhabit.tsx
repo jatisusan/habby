@@ -1,4 +1,7 @@
 import IconSelector from "@/components/IconSelector";
+import { DATABASE_ID, HABITS_TABLE_ID, tablesDB } from "@/lib/appwrite";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Image,
@@ -8,6 +11,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { ID } from "react-native-appwrite";
 import { Button, TextInput } from "react-native-paper";
 
 const FREQUENCIES = ["daily", "weekly", "monthly"];
@@ -17,10 +21,48 @@ const Addhabit = () => {
   const [description, setDescription] = useState<string>("");
   const [frequency, setFrequency] = useState<Frequency>("daily");
 
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [selectedIcon, setSelectedIcon] = useState("check-circle-outline");
 
+  const { user } = useAuth();
+  const router = useRouter();
+
   const handleSubmit = async () => {
-    console.log({ name, description, frequency });
+    setIsSubmitting(true);
+    try {
+      await tablesDB.createRow({
+        databaseId: DATABASE_ID,
+        tableId: HABITS_TABLE_ID,
+        rowId: ID.unique(),
+        data: {
+          name,
+          userId: user?.$id,
+          description,
+          frequency,
+          icon: selectedIcon,
+          streakCount: 0,
+          lastCompleted: null,
+        },
+      });
+
+      setError(null);
+      setName("");
+      setDescription("");
+      setFrequency("daily");
+      setSelectedIcon("check-circle-outline");
+
+      router.back();
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+        return;
+      }
+      setError("An error occurred while adding the habit.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   return (
     <ScrollView
@@ -37,6 +79,7 @@ const Addhabit = () => {
         label="Habit Name"
         mode="outlined"
         style={styles.input}
+        value={name}
         onChangeText={setName}
         outlineColor="white"
         theme={{ roundness: 16 }}
@@ -45,6 +88,7 @@ const Addhabit = () => {
         label="Description"
         mode="outlined"
         style={styles.input}
+        value={description}
         onChangeText={setDescription}
         outlineColor="white"
         theme={{ roundness: 16 }}
@@ -82,12 +126,14 @@ const Addhabit = () => {
         />
       </View>
 
+      {error && <Text style={styles.error}>{error}</Text>}
+
       <Button
         mode="contained"
         onPress={handleSubmit}
         style={styles.button}
         labelStyle={{ fontSize: 16 }}
-        disabled={!name || !description}
+        disabled={!name || !description || isSubmitting}
       >
         Add Habit
       </Button>
@@ -163,5 +209,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: "#5c5454",
     marginLeft: 5,
+  },
+  error: {
+    color: "red",
+    marginTop: 10,
+    textAlign: "center",
   },
 });
