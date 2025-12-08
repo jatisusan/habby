@@ -1,4 +1,4 @@
-import { DATABASE_ID, HABITS_TABLE_ID, tablesDB } from "@/lib/appwrite";
+import { client, DATABASE_ID, HABITS_TABLE_ID, tablesDB } from "@/lib/appwrite";
 import { useAuth } from "@/lib/auth-context";
 import { Habit } from "@/types";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -13,7 +13,28 @@ export default function Index() {
   const [habits, setHabits] = useState<Habit[]>([]);
 
   useEffect(() => {
-    fetchHabits();
+    if (user) {
+      const channel = `databases.${DATABASE_ID}.tables.${HABITS_TABLE_ID}.rows`;
+
+      const habitsSubscription = client.subscribe(channel, (res) => {
+        if (res.events.includes("databases.*.collections.*.rows.*.create")) {
+          fetchHabits();
+        } else if (
+          res.events.includes("databases.*.collections.*.rows.*.update")
+        ) {
+          fetchHabits();
+        } else if (
+          res.events.includes("databases.*.collections.*.rows.*.delete")
+        ) {
+          fetchHabits();
+        }
+      });
+
+      fetchHabits();
+      return () => {
+        habitsSubscription(); // unsubscribe
+      };
+    }
   }, [user]);
 
   const fetchHabits = async () => {
@@ -97,6 +118,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    paddingBottom: 0,
     backgroundColor: "#faf1ec",
   },
   header: {
@@ -112,9 +134,9 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 18,
     borderRadius: 20,
-    backgroundColor: "#FFFFFF", // clean + modern
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#FFE5D1", // subtle border
+    borderColor: "#FFFFFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,

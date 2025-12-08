@@ -8,3 +8,8 @@ export interface Habit extends Models.Row {
     lastCompleted: string | null; 
     icon: string;
 }
+
+export interface RealtimeResponse {
+    events: string[];
+    payload: Models.Row;
+}
